@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 
@@ -7,10 +6,11 @@ pipeline {
         IMAGE_NAME = "indie-gems"
         IMAGE_TAG  = "latest"
         CONTAINER_NAME = "indie-gems-container"
-        PORT = "4000"   // External port for app
+        PORT = "4000"
     }
 
     stages {
+
         stage('Checkout Code') {
             steps {
                 dir("${WORK_DIR}") {
@@ -18,19 +18,29 @@ pipeline {
                 }
             }
         }
-        stage('mvn')
-        {
-            steps
-            {
-                sh 'mvn clean package'
+
+        stage('Install Dependencies') {
+            steps {
+                dir("${WORK_DIR}") {
+                    sh 'npm install'
+                }
             }
         }
+
+        stage('Run Tests (Optional)') {
+            steps {
+                dir("${WORK_DIR}") {
+                    sh 'npm test || true'
+                }
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 dir("${WORK_DIR}") {
                     sh '''
                         docker rmi -f ${IMAGE_NAME}:${IMAGE_TAG} || true
-                        docker build -t ${IMAGE_NAME}:${IMAGE_TAG} -f ${WORK_DIR}/Dockerfile ${WORK_DIR}
+                        docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
                     '''
                 }
             }
@@ -41,8 +51,7 @@ pipeline {
                 dir("${WORK_DIR}") {
                     sh '''
                         docker rm -f ${CONTAINER_NAME} || true
-                        docker pull ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}
-                        docker run -d --name ${CONTAINER_NAME} -p ${PORT}:80 ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}
+                        docker run -d --name ${CONTAINER_NAME} -p ${PORT}:3000 ${IMAGE_NAME}:${IMAGE_TAG}
                     '''
                 }
             }
@@ -51,9 +60,7 @@ pipeline {
 
     post {
         always {
-            echo "Pipeline finished and updated! Check http://13.204.85.107:3000"
-
+            echo "Pipeline finished! Check http://13.204.85.107:${PORT}"
         }
     }
 }
-
