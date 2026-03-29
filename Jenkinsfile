@@ -26,6 +26,11 @@ pipeline {
                 }
             }
         }
+        stage('Lint'){
+            steps{
+                sh 'npm run lint'
+            }
+        }
 
         stage('Run Tests (Optional)') {
             steps {
