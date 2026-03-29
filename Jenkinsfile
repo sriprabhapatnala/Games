@@ -28,7 +28,9 @@ pipeline {
         }
         stage('Lint'){
             steps{
+                dir("${WORK_DIR}"){
                 sh 'npm run lint'
+            }
             }
         }
 
