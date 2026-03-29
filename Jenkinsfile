@@ -51,7 +51,7 @@ pipeline {
                 dir("${WORK_DIR}") {
                     sh '''
                         docker rm -f ${CONTAINER_NAME} || true
-                        docker run -d --name ${CONTAINER_NAME} -p ${PORT}:3000 ${IMAGE_NAME}:${IMAGE_TAG}
+                        docker run -d --name ${CONTAINER_NAME} -p ${PORT}:80 ${IMAGE_NAME}:${IMAGE_TAG}
                     '''
                 }
             }
